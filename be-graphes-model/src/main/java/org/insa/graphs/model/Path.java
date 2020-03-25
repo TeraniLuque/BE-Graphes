@@ -34,10 +34,41 @@ public class Path {
      */
     public static Path createFastestPathFromNodes(Graph graph, List<Node> nodes)
             throws IllegalArgumentException {
-        List<Arc> arcs = new ArrayList<Arc>();
+        
         //voir le programme Shortest et remplacer distancemin par tempsmin(double) et getLength par getminimumtraveltime
+    	Arc currentArc = null;
+    	List<Arc> arcs = new ArrayList<Arc>();
+    	double tempsMin = 9999;
+    	
+    	if(nodes.size() == 0 ) {
+    		return new Path(graph);
+    	}
+    	
+    	if(nodes.size() == 1) {
+    		return new Path(graph, nodes.get(0));
+    	}
+    	
+    	for(int i=0; i<nodes.size()-1; i++) {
+    		for(Arc a : nodes.get(i).getSuccessors()) {
+    			if((a.getMinimumTravelTime() < tempsMin) && (a.getDestination().equals(nodes.get(i+1)))) {
+    				currentArc = a;
+    				tempsMin = a.getMinimumTravelTime();
+    			}
+    		}
+    		if(currentArc == null) {
+    			throw new IllegalArgumentException();
+    		}
+    		arcs.add(currentArc);
+    		tempsMin = 9999;
+    		currentArc = null;
+    	}
+        
         return new Path(graph, arcs);
     }
+
+        
+        
+       
     
      
     /**
@@ -56,8 +87,34 @@ public class Path {
      */
     public static Path createShortestPathFromNodes(Graph graph, List<Node> nodes)
             throws IllegalArgumentException {
-        List<Arc> arcs = new ArrayList<Arc>();
-        // TODO:
+        
+    	Arc currentArc = null;
+    	List<Arc> arcs = new ArrayList<Arc>();
+    	float distanceMin = 9999;
+    	
+    	if(nodes.size() == 0 ) {
+    		return new Path(graph);
+    	}
+    	
+    	if(nodes.size() == 1) {
+    		return new Path(graph, nodes.get(0));
+    	}
+    	
+    	for(int i=0; i<nodes.size()-1; i++) {
+    		for(Arc a : nodes.get(i).getSuccessors()) {
+    			if((a.getLength() < distanceMin) && (a.getDestination().equals(nodes.get(i+1)))) {
+    				currentArc = a;
+    				distanceMin = a.getLength();
+    			}
+    		}
+    		if(currentArc == null) {
+    			throw new IllegalArgumentException();
+    		}
+    		arcs.add(currentArc);
+    		distanceMin = 9999;
+    		currentArc = null;
+    	}
+        
         return new Path(graph, arcs);
     }
 
