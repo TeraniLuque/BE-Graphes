@@ -15,7 +15,7 @@ public class Label implements Comparable<Label>{
 
 
 	public float getCost() {
-		return this.cout;
+		return (float) this.cout;
 	}
 	
 	public Label(Node sommet, boolean marque, float cout, Arc pere) {
