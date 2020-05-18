@@ -13,129 +13,119 @@ import org.insa.graphs.model.Path;
 import org.insa.graphs.algorithm.AbstractInputData;
 
 
-
 public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 
     public DijkstraAlgorithm(ShortestPathData data) {
         super(data);
     }
 
-
     @Override
     protected ShortestPathSolution doRun() {
         final ShortestPathData data = getInputData();
         ShortestPathSolution solution = null;
         
-        Node origin = data.getOrigin();
         Graph graph = data.getGraph();
-        List <Node> nodes = graph.getNodes();  //liste des noeuds de notre graphe
+        List<Node> nodes = graph.getNodes();
+        
+        BinaryHeap<Label> heap = new BinaryHeap<Label>();
         Label[] labels = new Label[graph.size()];
         
-        //Initialisation
-        for (Node node : nodes) {
-        	if (node == origin){
-        		labels[node.getId()]=new Label(node, true,0, null);
-        	}
-        	else {
-        		labels[node.getId()]=new Label(node, false, Float.POSITIVE_INFINITY, null);
-        	}
-        }
+        Node origine = data.getOrigin();
         
+        for (Node node : nodes ) {
+            labels[node.getId()] = new Label(node,false,Float.POSITIVE_INFINITY,null);
+    }
+    
+        notifyOriginProcessed(origine);
+        labels[origine.getId()].setCout(0);
+        heap.insert(labels[origine.getId()]);
+    
+        while(!heap.isEmpty() && labels[data.getDestination().getId()].isMarque() == false) {
+	        Label label_courrant = heap.deleteMin();
+	        label_courrant.marquer();
+	        Node noeud_courant = label_courrant.getNode();
+	        notifyNodeMarked(noeud_courant);
+	        
+	        //int nbsuccesseur=0;
         
-        BinaryHeap <Label> Tas_Label = new BinaryHeap <Label>();
-        
-        
-        notifyOriginProcessed(origin);
-        
-        Tas_Label.insert(labels[origin.getId()]);
-        
-        while(!Tas_Label.isEmpty()) {
-            Label label_courrant = Tas_Label.deleteMin();
-            label_courrant.Marquer();
-            Node noeud_courant = label_courrant.getSommet_courant();
-            
-            int nb_successeur = 0;
-            
-            for (Arc arc : noeud_courant.getSuccessors()) {
-                
-            		nb_successeur ++;
-	            	Node noeud_destination = arc.getDestination();
-	                Label label_destination = labels[noeud_destination.getId()];
-	                
-	                double cout = data.getCost(arc) + label_courrant.getCost();
-	                notifyNodeReached(noeud_courant);
-	                
-	                if(!data.isAllowed(arc)) {
-	                	continue;
-	                }
-	                
-	                if (!label_destination.isMarque() && label_destination.getCost()>cout ) 
-	                {
-	                    if (label_destination.getPere()==null) { 
-	                        label_destination.setCout(cout);
-	                        label_destination.setPere(arc);
-	                        Tas_Label.insert(label_destination);
-	                        notifyNodeReached(noeud_destination);
-	                        System.out.println("cout:" +label_destination.getCout());
-	                    }    
-	                    else {
-	                        Tas_Label.remove(label_destination);
-	                        label_destination.setCout(cout);
-	                        label_destination.setPere(arc);
-	                        Tas_Label.insert(label_destination);
-	                        notifyNodeReached(noeud_destination);
-	                        System.out.println("cout:" +label_destination.getCout());
-	                    }
-	                }
+	        for (Arc arc : noeud_courant.getSuccessors()) {
+	            Node noeud_destination = arc.getDestination();
+	            Label label_destination = labels[noeud_destination.getId()];
+	            
+	            double cout = data.getCost(arc) + label_courrant.getCost();
+	            //nbsuccesseur++;
+	            
+	            if (!data.isAllowed(arc)) {
+	                continue;
+	            }
+	            
+	            if (!label_destination.isMarque() && label_destination.getCost()>cout )
+                {
+                    
+                    if (label_destination.getPere()==null) { 
+                        label_destination.setCout(cout);
+                        label_destination.setPere(arc);
+                        heap.insert(label_destination);
+                        notifyNodeReached(noeud_destination);
+                        //System.out.println("Cout: "+label_destination.getCost());
+      
+                    }    
+                    else {
+                        heap.remove(label_destination);
+                        label_destination.setCout(cout);
+                        label_destination.setPere(arc);
+                        heap.insert(label_destination);
+                        notifyNodeReached(noeud_destination);
+                        //System.out.println("Cout: "+label_destination.getCost());
+                    }
                 }
-
-    		System.out.println("nombre d'arc:" +nb_successeur); 
-            }
-       
-       
+                
+  
+            }// end for
+            //System.out.println("Successeur: "+nbsuccesseur);
+                    
+        }// end while
         
-        notifyDestinationReached(data.getDestination());
         Node noeud_desti = data.getDestination();
         Label label_desti = labels[noeud_desti.getId()];
-            
-        if (label_desti.getPere()==null) {
+        
+        // Destination has no predecessor, the solution is infeasible...
+        if (label_desti.getPere()== null) {
             solution = new ShortestPathSolution(data, Status.INFEASIBLE);
         }
+       
         else {
             // The destination has been found, notify the observers.
             notifyDestinationReached(noeud_desti);
             
             // Create the path from the array of predecessors...
             ArrayList<Arc> arcs = new ArrayList<>();
-            Arc Arc = label_desti.getPere();
+            Arc arc = label_desti.getPere();
             
-            while (Arc != null) {
-                arcs.add(Arc);
-                label_desti = labels[Arc.getOrigin().getId()];
-                Arc = label_desti.getPere();
+            while (arc != null) {
+                arcs.add(arc);
+                label_desti = labels[arc.getOrigin().getId()];
+                arc = label_desti.getPere();
             }
 
             // Reverse the path...
             Collections.reverse(arcs);
             
-            //Check if the path is valid
-            if(arcs.isValid()) {
-            	//TODO
-            }
-
+            Path path= new Path(graph, arcs);
             // Create the final solution.
-            solution = new ShortestPathSolution(data, Status.OPTIMAL, new Path(graph, arcs));
+            if(path.isValid()==true) {
+                solution = new ShortestPathSolution(data, Status.OPTIMAL, path);
+                System.out.println("Chemin valide");
+            }
+            else {
+                System.out.println("Chemin non valide");
+                solution=null;
+            }
+            
         }
-    
- 
+        
         
         return solution;
     }
-        
-        
-        
-
 }
-
-   
-        
+     

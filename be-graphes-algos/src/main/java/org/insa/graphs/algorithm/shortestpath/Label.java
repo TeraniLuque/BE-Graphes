@@ -18,7 +18,7 @@ public class Label implements Comparable<Label>{
 		return (float) this.cout;
 	}
 	
-	public Label(Node sommet, boolean marque, float cout, Arc pere) {
+	public Label(Node sommet, boolean marque, double cout, Arc pere) {
 		this.sommet_courant = sommet;
 		this.marque = marque;
 		this.cout = cout;
@@ -26,23 +26,27 @@ public class Label implements Comparable<Label>{
 	}
 	
 	public int compareTo(Label other) {
-		return Double.compare(this.getCost(), other.getCost());
+		return Double.compare(this.getTotalCost(), other.getTotalCost());
 	}
 	
-	public Node getSommet_courant() {
+	public Node getNode() {
 		return sommet_courant;
 	}
 
-	public void setSommet_courant(Node sommet_courant) {
+	public void setNode(Node sommet_courant) {
 		this.sommet_courant = sommet_courant;
 	}
 
-	public void Marquer() {
+	public void marquer() {
 		this.marque= true;
 	}
 	
 
 	public double getCout() {
+		return cout;
+	}
+	
+	public double getTotalCost() {
 		return cout;
 	}
 
