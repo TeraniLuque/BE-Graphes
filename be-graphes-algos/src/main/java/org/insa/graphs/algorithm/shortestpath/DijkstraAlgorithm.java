@@ -122,8 +122,14 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
                 solution=null;
             }
             
+            System.out.println("Path : "+path.getLength()+" SPS : "+labels[data.getDestination().getId()].getCost());
+            
         }
-        
+        if(heap.isValid()==true) {
+    		System.out.println("Binary Heap valide");
+    	}
+       
+
         
         return solution;
     }

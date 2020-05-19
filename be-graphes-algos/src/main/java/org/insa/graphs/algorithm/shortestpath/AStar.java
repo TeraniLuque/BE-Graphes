@@ -15,7 +15,7 @@ public class AStar extends ShortestPathAlgorithm {
 	
 	
 	
-	protected AStar(ShortestPathData data) {
+	public AStar(ShortestPathData data) {
 		super(data);
 	}
 	
@@ -34,7 +34,7 @@ public class AStar extends ShortestPathAlgorithm {
 	    Node origine = data.getOrigin();
 	    
 	    for (Node node : nodes ) {
-	        labels[node.getId()] = new LabelStar(node,false,Float.POSITIVE_INFINITY,null);
+	        labels[node.getId()] = new LabelStar(node,false,Float.POSITIVE_INFINITY,null, data.getDestination());
 	}
 	
 	    notifyOriginProcessed(origine);
@@ -122,6 +122,8 @@ public class AStar extends ShortestPathAlgorithm {
 	            System.out.println("Chemin non valide");
 	            solution=null;
 	        }
+	        
+	        System.out.println("Path : "+path.getLength()+" SPS : "+labels[data.getDestination().getId()].getCost());
 	        
 	    }
 	    if(heap.isValid()) {
